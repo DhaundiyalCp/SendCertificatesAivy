@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // Define protected paths
   const protectedPaths = ['/api/templates', '/api/generate-certificates', '/templates', '/generate', '/dashboard', '/email', "/templates/new", "/templates/new/[id]"];
   const apiPaths = ['/api/v1']; 
