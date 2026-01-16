@@ -16,13 +16,7 @@ import { AddSignatureModal } from "@/app/components/AddSignatureModal";
 import TemplatePreviewModal from "@/app/components/TemplatePreviewModal";
 import { FeedbackDialog } from '@/app/components/FeedbackDialog';
 
-interface EditTemplatePageProps {
-  params: Promise<{ id: string }>
-}
-
-
-
-export default function EditTemplatePage({ params }: EditTemplatePageProps) {
+export default function EditTemplatePage() {
   const { id } = useParams();
   const router = useRouter();
   const [template, setTemplate] = useState<Partial<Template>>({

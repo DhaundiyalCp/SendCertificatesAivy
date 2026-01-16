@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 import path from 'path';
 
 registerFont(path.join(process.cwd(), 'public/fonts/MonteCarlo-Regular.ttf'), { family: 'MonteCarlo' });
@@ -9,14 +10,10 @@ registerFont(path.join(process.cwd(), 'public/fonts/Birthstone-Regular.ttf'), { 
 registerFont(path.join(process.cwd(), 'public/fonts/DancingScript-Regular.ttf'), { family: 'DancingScript' });
 registerFont(path.join(process.cwd(), 'public/fonts/LibreBaskerville-Regular.ttf'), { family: 'LibreBaskerville' });
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-function getUserIdFromRequest(request: Request): string | null {
-  const token = request.headers
-    .get('cookie')
-    ?.split('; ')
-    .find((c) => c.startsWith('token='))
-    ?.split('=')[1];
+async function getUserIdFromRequest(): Promise<string | null> {
+  const token = (await cookies()).get('token')?.value;
   if (!token) return null;
 
   try {
@@ -37,7 +34,7 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   try {
     // Authenticate request
-    const userId = getUserIdFromRequest(request);
+    const userId = await getUserIdFromRequest();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
