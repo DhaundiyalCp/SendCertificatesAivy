@@ -170,13 +170,12 @@ function isFileLike(value: any): value is FileLike {
   );
 }
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-function getUserIdFromRequest(request: Request): string | null {
-  const token = request.headers
-    .get('cookie')
-    ?.split('; ')
-    .find((c) => c.startsWith('token='))
-    ?.split('=')[1];
+import { cookies } from 'next/headers';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+async function getUserIdFromRequest(): Promise<string | null> {
+  const token = (await cookies()).get('token')?.value;
   if (!token) return null;
 
   try {
@@ -546,7 +545,7 @@ certificateWorker.on('error', (err) => {
 // ----------------------------------------
 export async function POST(request: Request) {
   // 1. Auth
-  const userId = getUserIdFromRequest(request);
+  const userId = await getUserIdFromRequest();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -578,10 +577,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid CSV file' }, { status: 400 });
   }
 
-  // 3. Validate user & tokens
+  // 3. Validate user exists
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { tokens: true, email: true },
+    select: { email: true },
   });
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -590,45 +589,13 @@ export async function POST(request: Request) {
   // 4. Parse CSV
   const csvText = await csvFile.text();
   const records = parse(csvText, { columns: true });
-  const tokensNeeded = records.length;
-  if (user.tokens < tokensNeeded) {
-    return NextResponse.json(
-      {
-        error: 'Insufficient tokens',
-        required: tokensNeeded,
-        available: user.tokens,
-      },
-      { status: 400 }
-    );
-  }
 
-  // 5. Transaction: Deduct tokens, create batch
-  const { batch } = await prisma.$transaction(async (tx: any) => {
-    const updatedUser = await tx.user.update({
-      where: { id: userId },
-      data: {
-        tokens: { decrement: tokensNeeded },
-      },
-    });
-
-    const newBatch = await tx.batch.create({
-      data: {
-        name: batchName,
-        creatorId: userId,
-      },
-    });
-
-    await tx.tokenTransaction.create({
-      data: {
-        userId,
-        amount: tokensNeeded,
-        type: 'DEDUCT',
-        reason: 'certificate_generation',
-        email: updatedUser.email,
-      },
-    });
-
-    return { batch: newBatch };
+  // 5. Create batch (no token deduction)
+  const batch = await prisma.batch.create({
+    data: {
+      name: batchName,
+      creatorId: userId,
+    },
   });
 
   // 6. Confirm template ownership

@@ -13,40 +13,6 @@ export function Navbar() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [tokens, setTokens] = useState<number>(0);
-  const [isApiEnabled, setIsApiEnabled] = useState(false);
-
-
-  const fetchTokens = async () => {
-    try {
-      const response = await fetch('/api/tokens');
-      const data = await response.json();
-      setTokens(data.tokens);
-    } catch (error) {
-      console.error('Error fetching tokens:', error);
-    }
-  };
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    console.log(storedUser);
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      setIsAdmin(userData.is_admin);
-      setIsApiEnabled(userData.is_api_enabled);
-    }
-    const fetchTokens = async () => {
-      try {
-        const tokensResponse = await fetch('/api/tokens');
-        const tokensData = await tokensResponse.json();
-        setTokens(tokensData.tokens);
-      } catch (error) {
-        console.error('Error fetching tokens:', error);
-      }
-    };
-    fetchTokens();
-  }, []);
 
 
   const activeClassName =
@@ -69,10 +35,6 @@ export function Navbar() {
         throw new Error('Failed to logout');
       }
       localStorage.removeItem('user');
-        
-      setIsAdmin(false);
-      setTokens(0);
-        
       router.push('/login');
     } catch (error) {
       console.error('Error during logout:', error);
@@ -114,14 +76,6 @@ export function Navbar() {
                 Generate
               </Link>
               <Link
-                href="/email"
-                className={
-                  currentPath === '/email' ? activeClassName : inactiveClassName
-                }
-              >
-                Email
-              </Link>
-              <Link
                 href="/analytics"
                 className={
                   currentPath === '/analytics' ? activeClassName : inactiveClassName
@@ -129,36 +83,11 @@ export function Navbar() {
               >
                 Analytics
               </Link>
-              {isApiEnabled && (
-               <Link
-                 href="/api-keys"
-                 className={
-                   currentPath === '/api-keys' ? activeClassName : inactiveClassName
-                 }
-               >
-                 API Keys
-               </Link>
-             )}
-              {isAdmin && (
-                <Link
-                  href="/dashboard"
-                  className={
-                    currentPath === '/dashboard' ? activeClassName : inactiveClassName
-                  }
-                >
-                  Dashboard
-                </Link>
-              )}
             </div>
           </div>
 
           {/* Right side: Logout button and mobile menu button */}
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:block">
-              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                {tokens} Tokens
-              </span>
-            </div>
             {/* Mobile menu button */}
             <div className="sm:hidden">
               <button
@@ -218,9 +147,6 @@ export function Navbar() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="sm:hidden px-4 pt-2 pb-3 space-y-2">
-          <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-md text-sm font-medium text-center">
-            {tokens} Tokens
-          </div>
           <Link
             href="/templates"
             onClick={handleMobileLinkClick}
@@ -240,15 +166,6 @@ export function Navbar() {
             Generate
           </Link>
           <Link
-            href="/email"
-            onClick={handleMobileLinkClick}
-            className={
-              currentPath === '/email' ? mobileActiveClassName : mobileInactiveClassName
-            }
-          >
-            Email
-          </Link>
-          <Link
             href="/analytics"
             onClick={handleMobileLinkClick}
             className={
@@ -257,28 +174,6 @@ export function Navbar() {
           >
             Analytics
           </Link>
-          {isApiEnabled && (
-           <Link
-             href="/api-keys"
-             onClick={handleMobileLinkClick}
-             className={
-               currentPath === '/api-keys' ? mobileActiveClassName : mobileInactiveClassName
-             }
-           >
-             API Keys
-           </Link>
-         )}
-          {isAdmin && (
-            <Link
-              href="/dashboard"
-              onClick={handleMobileLinkClick}
-              className={
-                currentPath === '/dashboard' ? mobileActiveClassName : mobileInactiveClassName
-              }
-            >
-              Dashboard
-            </Link>
-          )}
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BatchList } from '@/app/components/BatchList';
-import { UserTokenHistory } from '@/app/components/UserTokenHistory';
 import { AnalyticsSummary } from '@/app/components/AnalyticsSummary';
 import { BounceAnalysis, Batch } from '@/app/components/BounceAnalysis';
 
@@ -87,9 +86,6 @@ export default function AnalyticsPage() {
         </div>
         <div className='my-10'>
           <BatchList />
-        </div>
-        <div className='my-10'>
-          <UserTokenHistory />
         </div>
       </div>
     </main>
