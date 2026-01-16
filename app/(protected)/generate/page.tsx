@@ -96,14 +96,6 @@ function GeneratePageSkeleton() {
           </div>
         </div>
         
-        {/* CC Emails Field Skeleton */}
-        <div className="mb-6">
-          <div className="block text-sm font-medium text-gray-700 mb-2 w-24 h-4 bg-gray-300 rounded"></div>
-          <div className="w-full border border-gray-300 rounded mb-4 p-2">
-            <div className="h-4 bg-gray-200 rounded w-48"></div>
-          </div>
-        </div>
-        
         {/* CSV Upload Field Skeleton */}
         <div className="mb-6">
           <div className="block text-sm font-medium text-gray-700 mb-2 w-24 h-4 bg-gray-300 rounded"></div>
@@ -131,11 +123,9 @@ export default function GeneratePage() {
   const [dialogMessage, setDialogMessage] = useState<string | null>(null); // To store dialog message
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [ccEmails, setCcEmails] = useState<string>('');
   const [batchName, setBatchName] = useState('');
   const [csvSummary, setCsvSummary] = useState<CsvSummary | null>(null);
   const [isFormatGuideOpen, setIsFormatGuideOpen] = useState(false);
-  const [bccEmails, setBccEmails] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   
@@ -229,8 +219,6 @@ export default function GeneratePage() {
         const formData = new FormData();
         formData.append('csv', csvFile);
         formData.append('templateId', selectedTemplate.id);
-        formData.append('ccEmails', ccEmails);
-        formData.append('bccEmails', bccEmails);
         formData.append('batchName', batchName);
          const response = await fetch('/api/generate-certificates', {
           method: 'POST',
@@ -238,11 +226,7 @@ export default function GeneratePage() {
         });
          const data = await response.json();
          if (!response.ok) {
-          if (data.error === 'Insufficient tokens') {
-            setDialogMessage(`Insufficient tokens. You need ${data.required} tokens but have ${data.available} available.`);
-          } else {
-            throw new Error(data.error || 'Failed to generate certificates');
-          }
+          throw new Error(data.error || 'Failed to generate certificates');
         } else {
           setDialogMessage('Certificates generated successfully!');
         }
@@ -301,30 +285,6 @@ export default function GeneratePage() {
            </p>
          )}
        </Suspense>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CC Emails (Optional)
-            </label>
-            <input
-              type="text"
-              value={ccEmails}
-              onChange={(e) => setCcEmails(e.target.value)}
-              placeholder="Enter email addresses separated by commas"
-              className="w-full p-2 border border-gray-300 text-black rounded mb-4 focus:outline-1 focus:outline-blue-500"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              BCC Emails (Optional)
-            </label>
-            <input
-              type="text"
-              value={bccEmails}
-              onChange={(e) => setBccEmails(e.target.value)}
-              placeholder="Enter email addresses separated by commas"
-              className="w-full p-2 border border-gray-300 text-black rounded mb-4 focus:outline-1 focus:outline-blue-500"
-            />
-          </div>
           <div className="mb-6">
             <div className="flex justify-between items-center">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -358,7 +318,6 @@ export default function GeneratePage() {
                   <p>Total Rows: {csvSummary.totalRows}</p>
                   <p>Columns: {csvSummary.columnNames.join(', ')}</p>
                   <p>Total Emails: {csvSummary.totalEmails}</p>
-                  <p>Estimated Tokens Required: {csvSummary.totalRows * 1}</p>
                   
                   {csvSummary.invalidEmails.length > 0 && (
                     <div className="mt-3">
@@ -462,9 +421,6 @@ export default function GeneratePage() {
             {csvSummary && (
               <div className="text-sm text-gray-600">
                 <p>• Total Recipients: {csvSummary.totalRows}</p>
-                <p>• Tokens Required: {csvSummary.totalRows * 1}</p>
-                {ccEmails && <p>• CC Recipients: {ccEmails.split(',').filter(e => e.trim()).length}</p>}
-                {bccEmails && <p>• BCC Recipients: {bccEmails.split(',').filter(e => e.trim()).length}</p>}
               </div>
             )}
             <div className="flex justify-end space-x-3">

@@ -468,30 +468,8 @@ const certificateWorker = new Worker(
               batchId
             );
 
-            // Queue up the email if "email" field is present
-            const emailKey = Object.keys(record).find((k) => k.toLowerCase() === 'email');
-            if (emailKey) {
-              const emailAddress = record[emailKey].trim();
-              if (isValidEmail(emailAddress)) {
-                const emailData = await prepareEmailData(
-                  emailAddress,
-                  record,
-                  certificateUrl,
-                  emailConfig,
-                  emailFrom,
-                  ccEmails,
-                  bccEmails,
-                  userId,
-                  batchId
-                );
-                await emailQueue.add('sendEmail', emailData);
-              } else {
-                invalidEmails.push({
-                  email: emailAddress,
-                  reason: 'Invalid email format',
-                });
-              }
-            }
+            // Email sending disabled - certificates are saved to S3 only
+            // Certificate URL is available at certificateUrl for future use
           } catch (error: any) {
             console.error('Error processing certificate:', error);
             // Store failed record for debugging/retry
@@ -555,14 +533,6 @@ export async function POST(request: Request) {
   const batchName = formData.get('batchName') as string;
   const csvFile = formData.get('csv');
   const templateId = formData.get('templateId') as string;
-  const ccEmails = (formData.get('ccEmails') as string || '')
-    .split(',')
-    .map((email) => email.trim())
-    .filter((email) => email);
-  const bccEmails = (formData.get('bccEmails') as string || '')
-    .split(',')
-    .map((email) => email.trim())
-    .filter((email) => email);
 
   if (!csvFile) {
     return NextResponse.json({ error: 'No CSV file provided' }, { status: 400 });
@@ -606,7 +576,6 @@ export async function POST(request: Request) {
 
   // 7. Split records into sub-batches & enqueue
   const BATCH_SIZE = 100;
-  const emailConfig = await prisma.emailConfig.findUnique({ where: { userId } });
   const totalRecords = records.length;
   const batches = [];
   for (let i = 0; i < totalRecords; i += BATCH_SIZE) {
@@ -620,9 +589,9 @@ export async function POST(request: Request) {
         templateId,
         batchId: batch.id,
         userId,
-        emailFrom: emailConfig?.customEmail || process.env.EMAIL_FROM,
-        ccEmails,
-        bccEmails,
+        emailFrom: '', // Not used - email disabled
+        ccEmails: [],
+        bccEmails: [],
         batchIndex: index,
         totalBatches: batches.length,
       })
