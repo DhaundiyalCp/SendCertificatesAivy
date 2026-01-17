@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     // Ensure default owner account always has full admin + API access
     let effectiveUser = user;
-    if (user.email === 'cpdhaundiyal.87@gmail.com' && (!user.is_admin || !user.is_api_enabled)) {
+    if (user.email.toLowerCase() === 'cpdhaundiyal.87@gmail.com' && (!user.is_admin || !user.is_api_enabled)) {
       effectiveUser = await prisma.user.update({
         where: { id: user.id },
         data: {
