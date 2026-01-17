@@ -13,6 +13,21 @@ export function Navbar() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.is_admin) {
+          setIsAdmin(true);
+        }
+      } catch (e) {
+        console.error('Error parsing user from local storage', e);
+      }
+    }
+  }, []);
 
 
   const activeClassName =
@@ -31,7 +46,7 @@ export function Navbar() {
       const response = await fetch('/api/logout', {
         method: 'POST',
       });
-        if (!response.ok) {
+      if (!response.ok) {
         throw new Error('Failed to logout');
       }
       localStorage.removeItem('user');
@@ -83,6 +98,16 @@ export function Navbar() {
               >
                 Analytics
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/dashboard"
+                  className={
+                    currentPath === '/dashboard' ? activeClassName : inactiveClassName
+                  }
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
 
@@ -174,6 +199,17 @@ export function Navbar() {
           >
             Analytics
           </Link>
+          {isAdmin && (
+            <Link
+              href="/dashboard"
+              onClick={handleMobileLinkClick}
+              className={
+                currentPath === '/dashboard' ? mobileActiveClassName : mobileInactiveClassName
+              }
+            >
+              Admin
+            </Link>
+          )}
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
