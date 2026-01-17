@@ -25,7 +25,7 @@ export default function RegisterPage() {
       headers: { 'Content-Type': 'application/json' },
     });
     if (res.ok) {
-      alert('Registration successful.');
+      alert('Registration successful. Please check your email to verify your account.');
       router.push('/login');
     } else {
       const errorData = await res.json();
@@ -36,8 +36,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-      <div className="flex justify-center mb-6">
-        <Image src="/SendCertificates (Only Logo).png" alt="Logo" width={100} height={100} />
+        <div className="flex justify-center mb-6">
+          <Image src="/SendCertificates (Only Logo).png" alt="Logo" width={100} height={100} />
         </div>
         <h2 className="text-3xl text-black mb-6 text-center">Register</h2>
         <form onSubmit={handleSubmit}>

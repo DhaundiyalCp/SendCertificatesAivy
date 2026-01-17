@@ -14,6 +14,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
+    if (!user.emailVerified) {
+      return NextResponse.json({
+        error: 'Email not verified',
+        code: 'EMAIL_NOT_VERIFIED'
+      }, { status: 403 });
+    }
+
     // Ensure default owner account always has full admin + API access
     let effectiveUser = user;
     if (user.email === 'cpdhaundiyal.87@gmail.com' && (!user.is_admin || !user.is_api_enabled)) {
@@ -27,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     const token = jwt.sign({ userId: effectiveUser.id }, JWT_SECRET, { expiresIn: '7d' });
-    const response = NextResponse.json({ 
+    const response = NextResponse.json({
       message: 'Login successful',
       is_admin: effectiveUser.is_admin,
       user: {

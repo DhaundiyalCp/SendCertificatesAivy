@@ -18,15 +18,31 @@ export default function LoginPage() {
       body: JSON.stringify(formData),
       headers: { 'Content-Type': 'application/json' },
     });
-    
+
     const data = await res.json();
-    
+
     if (res.ok) {
       // Store user data in localStorage
       localStorage.setItem('user', JSON.stringify(data.user));
       router.push('/templates');
     } else {
-      alert(data.error || 'Login failed');
+      if (data.code === 'EMAIL_NOT_VERIFIED') {
+        const shouldResend = confirm('Email not verified. Would you like to resend the verification email?');
+        if (shouldResend) {
+          try {
+            await fetch('/api/resend-verification', {
+              method: 'POST',
+              body: JSON.stringify({ email: formData.email }),
+              headers: { 'Content-Type': 'application/json' },
+            });
+            alert('Verification email resent. Please check your inbox.');
+          } catch (err) {
+            alert('Failed to resend verification email.');
+          }
+        }
+      } else {
+        alert(data.error || 'Login failed');
+      }
     };
   };
 
