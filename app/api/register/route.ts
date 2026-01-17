@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendVerificationEmail(email, verificationToken);
+    await sendVerificationEmail(email, name, verificationToken);
 
     await prisma.emailConfig.create({
       data: {

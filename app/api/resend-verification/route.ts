@@ -29,7 +29,7 @@ export async function POST(request: Request) {
             data: { verificationToken },
         });
 
-        await sendVerificationEmail(email, verificationToken);
+        await sendVerificationEmail(email, user.name, verificationToken);
 
         return NextResponse.json({ message: 'Verification email resent' });
     } catch (error) {

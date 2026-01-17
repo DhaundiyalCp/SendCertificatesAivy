@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       data: { resetToken, resetTokenExpiry },
     });
 
-    await sendPasswordResetEmail(email, resetToken);
+    await sendPasswordResetEmail(email, user.name, resetToken);
 
     return NextResponse.json({ message: 'Password reset link sent' });
   } catch (error) {
