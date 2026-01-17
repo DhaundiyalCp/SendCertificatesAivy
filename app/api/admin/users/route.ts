@@ -106,7 +106,10 @@ export async function DELETE(request: Request) {
             // 5. API Keys
             await tx.apiKey.deleteMany({ where: { userId: targetUserId } });
 
-            // 6. Delete User
+            // 6. Delete EmailConfig
+            await tx.emailConfig.deleteMany({ where: { userId: targetUserId } });
+
+            // 7. Delete User
             await tx.user.delete({ where: { id: targetUserId } });
         });
 
