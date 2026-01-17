@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { TokenDisplay } from './TokenDisplay';
 
 
 
@@ -155,8 +156,9 @@ export function Navbar() {
                 )}
               </button>
             </div>
-            {/* Logout button, hidden on mobile */}
-            <div className="hidden sm:block">
+            {/* Logout button and Token Display, hidden on mobile */}
+            <div className="hidden sm:flex items-center space-x-4">
+              <TokenDisplay />
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
@@ -199,6 +201,9 @@ export function Navbar() {
           >
             Analytics
           </Link>
+          <div className="px-3 py-2">
+            <TokenDisplay />
+          </div>
           {isAdmin && (
             <Link
               href="/dashboard"
