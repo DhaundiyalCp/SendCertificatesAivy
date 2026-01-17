@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/app/lib/db';
-import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import { sendPasswordResetEmail } from '@/app/lib/mail';
 
 export async function POST(request: Request) {
   try {
@@ -20,21 +20,7 @@ export async function POST(request: Request) {
       data: { resetToken, resetTokenExpiry },
     });
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-
-    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${resetToken}`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'Password Reset',
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
-    });
+    await sendPasswordResetEmail(email, resetToken);
 
     return NextResponse.json({ message: 'Password reset link sent' });
   } catch (error) {

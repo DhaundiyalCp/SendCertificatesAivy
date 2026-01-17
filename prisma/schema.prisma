@@ -48,6 +48,8 @@ model User {
   phone            String?
   resetToken       String?
   resetTokenExpiry DateTime?
+  verificationToken String?
+  emailVerified    DateTime?
   templates        Template[]
   certificates     Certificate[]
   batches          Batch[]
