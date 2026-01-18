@@ -15,7 +15,7 @@ export async function sendVerificationEmail(email: string, name: string, token: 
     const html = getVerificationEmailTemplate(name, confirmLink);
 
     await transporter.sendMail({
-        from: process.env.EMAIL_FROM,
+        from: `"Aivy Cloud" <${process.env.EMAIL_FROM}>`,
         to: email,
         subject: `Verify your email, ${name}`,
         html: html,
@@ -36,7 +36,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
     const html = getResetPasswordEmailTemplate(name, resetLink);
 
     await transporter.sendMail({
-        from: process.env.EMAIL_FROM,
+        from: `"Aivy Cloud" <${process.env.EMAIL_FROM}>`,
         to: email,
         subject: `Reset your password, ${name}`,
         html: html,

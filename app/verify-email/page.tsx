@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+import Image from 'next/image';
+
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -48,7 +50,10 @@ function VerifyEmailContent() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <div className="flex justify-center mb-6">
+                        <Image src="/SendCertificates (Only Logo).png" alt="Logo" width={100} height={100} />
+                    </div>
+                    <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
                         Email Verification
                     </h2>
                     <div className="mt-8">
