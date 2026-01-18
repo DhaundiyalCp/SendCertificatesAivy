@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CreateUserModal } from './CreateUserModal';
 
 interface User {
     id: string;
@@ -18,6 +19,7 @@ export function UserManagement() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -69,7 +71,24 @@ export function UserManagement() {
 
     return (
         <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-6 text-gray-800">User Management ({users.length})</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">User Management ({users.length})</h2>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium"
+                >
+                    Add User
+                </button>
+            </div>
+
+            <CreateUserModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onUserCreated={() => {
+                    fetchUsers();
+                    // Don't close modal here, let user close it after copying credentials
+                }}
+            />
 
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

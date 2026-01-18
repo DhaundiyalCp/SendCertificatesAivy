@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/app/lib/db';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '@/app/lib/mail';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -47,6 +50,79 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ users });
+}
+
+export async function POST(request: Request) {
+    const userId = await getUserIdFromRequest();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const admin = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { is_admin: true }
+    });
+
+    if (!admin?.is_admin) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    try {
+        const { name, email, organization, phone } = await request.json();
+
+        // Check if user exists
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+        }
+
+        // Generate random password
+        const password = crypto.randomBytes(8).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+
+        // Create user
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                email,
+                organization,
+                phone,
+                password: hashedPassword,
+                verificationToken,
+                emailVerified: new Date(), // Auto-verify admin created users? Or let them verify? Let's auto-verify for convenience or send verification? 
+                // Let's send verification email so they know they have an account, but maybe we should also send them the password?
+                // The requirements said "generate password from admin dashboard instantly". 
+                // So we will return the password to the admin to share with the user.
+                is_admin: false,
+            },
+        });
+
+        // Initialize EmailConfig
+        await prisma.emailConfig.create({
+            data: {
+                userId: newUser.id,
+                defaultSubject: "Your Certificate",
+                defaultMessage: "Please find your certificate attached.",
+                emailHeading: "Congratulations on receiving your certificate!",
+                logoUrl: "https://bugsbucketrz.s3.ap-south-1.amazonaws.com/acme.png",
+                supportEmail: "support@example.com",
+            },
+        });
+
+        // Determine if we should send an email. 
+        // Since we are generating a password, the admin needs to give it to the user.
+        // Or we could email the user their credentials. 
+        // For "instant" generation, usually the admin wants to see it.
+
+        return NextResponse.json({
+            success: true,
+            user: newUser,
+            generatedPassword: password
+        });
+
+    } catch (error) {
+        console.error('Error creating user:', error);
+        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    }
 }
 
 export async function DELETE(request: Request) {
